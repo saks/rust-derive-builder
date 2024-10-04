@@ -107,9 +107,11 @@ impl<'a> Initializer<'a> {
     fn match_some(&'a self) -> MatchSome<'a> {
         match self.builder_pattern {
             BuilderPattern::Owned => MatchSome::Move,
-            BuilderPattern::Mutable | BuilderPattern::Immutable => MatchSome::Clone {
-                crate_root: self.crate_root,
-            },
+            BuilderPattern::Mutable | BuilderPattern::Immutable | BuilderPattern::Uniffi => {
+                MatchSome::Clone {
+                    crate_root: self.crate_root,
+                }
+            }
         }
     }
 

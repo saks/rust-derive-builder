@@ -97,6 +97,12 @@ impl<'a> ToTokens for Setter<'a> {
                     self_into_return_ty =
                         quote!(#crate_root::export::core::clone::Clone::clone(self));
                 }
+                BuilderPattern::Uniffi => {
+                    self_param = quote!(&self);
+                    return_ty = quote!(#crate_root::export::core::sync::Arc<Self>);
+                    self_into_return_ty =
+                        quote!(#crate_root::export::core::clone::Clone::clone(self));
+                }
             };
 
             let ty_params: TokenStream;
@@ -134,6 +140,12 @@ impl<'a> ToTokens for Setter<'a> {
                 into_value = wrap_expression_in_some(crate_root, into_value);
             }
 
+            let return_expr = if pattern == BuilderPattern::Uniffi {
+                quote!(#crate_root::export::core::sync::Arc::new(new))
+            } else {
+                quote!(new)
+            };
+
             tokens.append_all(quote!(
                 #(#attrs)*
                 #[allow(unused_mut)]
@@ -142,7 +154,7 @@ impl<'a> ToTokens for Setter<'a> {
                 {
                     let mut new = #self_into_return_ty;
                     new.#field_ident = #into_value;
-                    new
+                    #return_expr
                 }
             ));
 

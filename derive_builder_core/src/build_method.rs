@@ -77,7 +77,9 @@ impl<'a> ToTokens for BuildMethod<'a> {
         let initializers = &self.initializers;
         let self_param = match self.pattern {
             BuilderPattern::Owned => quote!(self),
-            BuilderPattern::Mutable | BuilderPattern::Immutable => quote!(&self),
+            BuilderPattern::Mutable | BuilderPattern::Immutable | BuilderPattern::Uniffi => {
+                quote!(&self)
+            }
         };
         let doc_comment = &self.doc_comment;
         let default_struct = self.default_struct.as_ref().map(|default_expr| {
@@ -93,16 +95,24 @@ impl<'a> ToTokens for BuildMethod<'a> {
 
         if self.enabled {
             let crate_root = &self.crate_root;
+            let (return_ty, return_exp) = if self.pattern == BuilderPattern::Uniffi {
+                (
+                    quote!(#crate_root::export::core::sync::Arc<#target_ty>),
+                    quote!(#crate_root::export::core::sync::Arc::new(#target_ty {
+                        #(#initializers)*
+                    })),
+                )
+            } else {
+                (quote!(#target_ty), quote!(#target_ty { #(#initializers)* }))
+            };
             tokens.append_all(quote!(
                 #doc_comment
                 #vis fn #ident(#self_param)
-                    -> #crate_root::export::core::result::Result<#target_ty #target_ty_generics, #error_ty>
+                    -> #crate_root::export::core::result::Result<#return_ty #target_ty_generics, #error_ty>
                 {
                     #validate_fn
                     #default_struct
-                    Ok(#target_ty {
-                        #(#initializers)*
-                    })
+                    Ok(#return_exp)
                 }
             ))
         }

@@ -207,18 +207,25 @@ impl<'a> ToTokens for Builder<'a> {
             #[cfg(not(feature = "clippy"))]
             tokens.append_all(quote!(#[allow(clippy::all)]));
 
-            tokens.append_all(quote!(
-                #(#impl_attrs)*
-                #[allow(dead_code)]
-                impl #impl_generics #builder_ident #impl_ty_generics #impl_where_clause {
-                    #(#functions)*
-
+            let create_empty_fn = if self.pattern == BuilderPattern::Uniffi {
+                quote!()
+            } else {
+                quote!(
                     /// Create an empty builder, with all fields set to `None` or `PhantomData`.
                     fn #create_empty() -> Self {
                         Self {
                             #(#builder_field_initializers)*
                         }
                     }
+                )
+            };
+
+            tokens.append_all(quote!(
+                #(#impl_attrs)*
+                #[allow(dead_code)]
+                impl #impl_generics #builder_ident #impl_ty_generics #impl_where_clause {
+                    #(#functions)*
+                    #create_empty_fn
                 }
             ));
 

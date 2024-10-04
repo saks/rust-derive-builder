@@ -17,6 +17,8 @@ pub enum BuilderPattern {
     ///   optimize chained `clone` calls away in release mode.
     ///   Therefore this turns out not to be as bad as it sounds.
     Immutable,
+    /// Works well for uniffi project.
+    Uniffi,
 }
 
 impl BuilderPattern {

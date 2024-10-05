@@ -501,6 +501,7 @@ fn default_create_empty() -> Ident {
 struct StructForwardedAttrs {
     struct_attrs: Vec<Attribute>,
     impl_attrs: Vec<Attribute>,
+    create_empty_attrs: Vec<Attribute>,
 }
 
 impl TryFrom<Vec<Attribute>> for StructForwardedAttrs {
@@ -513,6 +514,7 @@ impl TryFrom<Vec<Attribute>> for StructForwardedAttrs {
             &mut [
                 ("builder_struct_attr", &mut result.struct_attrs),
                 ("builder_impl_attr", &mut result.impl_attrs),
+                ("builder_create_empty_attr", &mut result.create_empty_attrs),
             ],
         )?;
 
@@ -523,7 +525,7 @@ impl TryFrom<Vec<Attribute>> for StructForwardedAttrs {
 #[derive(Debug, Clone, FromDeriveInput)]
 #[darling(
     attributes(builder),
-    forward_attrs(cfg, allow, builder_struct_attr, builder_impl_attr),
+    forward_attrs(cfg, allow, builder_struct_attr, builder_create_empty_attr),
     supports(struct_named)
 )]
 pub struct Options {
@@ -663,6 +665,7 @@ impl Options {
             derives: &self.derive,
             struct_attrs: &self.attrs.struct_attrs,
             impl_attrs: &self.attrs.impl_attrs,
+            create_empty_attrs: &self.attrs.create_empty_attrs,
             impl_default: !self.custom_constructor.is_present(),
             create_empty: self.create_empty.clone(),
             generics: Some(&self.generics),

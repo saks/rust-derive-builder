@@ -100,6 +100,8 @@ pub struct Builder<'a> {
     pub struct_attrs: &'a [syn::Attribute],
     /// Attributes to include on the builder's inherent `impl` block.
     pub impl_attrs: &'a [syn::Attribute],
+    /// Attributes to include on the `create_empty` method.
+    pub create_empty_attrs: &'a [syn::Attribute],
     /// When true, generate `impl Default for #ident` which calls the `create_empty` inherent method.
     ///
     /// Note that the name of `create_empty` can be overridden; see the `create_empty` field for more.
@@ -186,6 +188,7 @@ impl<'a> ToTokens for Builder<'a> {
 
             let struct_attrs = self.struct_attrs;
             let impl_attrs = self.impl_attrs;
+            let create_empty_attrs = self.create_empty_attrs;
 
             let builder_doc_comment = &self.doc_comment;
 
@@ -207,25 +210,20 @@ impl<'a> ToTokens for Builder<'a> {
             #[cfg(not(feature = "clippy"))]
             tokens.append_all(quote!(#[allow(clippy::all)]));
 
-            let create_empty_fn = if self.pattern == BuilderPattern::Uniffi {
-                quote!()
-            } else {
-                quote!(
-                    /// Create an empty builder, with all fields set to `None` or `PhantomData`.
-                    fn #create_empty() -> Self {
-                        Self {
-                            #(#builder_field_initializers)*
-                        }
-                    }
-                )
-            };
-
             tokens.append_all(quote!(
                 #(#impl_attrs)*
                 #[allow(dead_code)]
                 impl #impl_generics #builder_ident #impl_ty_generics #impl_where_clause {
                     #(#functions)*
-                    #create_empty_fn
+
+                    /// A CHANGE!
+                    /// Create an empty builder, with all fields set to `None` or `PhantomData`.
+                    #(#create_empty_attrs)*
+                    fn #create_empty() -> Self {
+                        Self {
+                            #(#builder_field_initializers)*
+                        }
+                    }
                 }
             ));
 
@@ -385,6 +383,7 @@ macro_rules! default_builder {
             derives: &vec![],
             struct_attrs: &vec![],
             impl_attrs: &vec![],
+            create_empty_attrs: &vec![],
             impl_default: true,
             create_empty: syn::Ident::new("create_empty", ::proc_macro2::Span::call_site()),
             generics: None,

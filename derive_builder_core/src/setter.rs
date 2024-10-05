@@ -97,7 +97,7 @@ impl<'a> ToTokens for Setter<'a> {
                     self_into_return_ty =
                         quote!(#crate_root::export::core::clone::Clone::clone(self));
                 }
-                BuilderPattern::Uniffi => {
+                BuilderPattern::ImmutableArc => {
                     self_param = quote!(&self);
                     return_ty = quote!(#crate_root::export::core::sync::Arc<Self>);
                     self_into_return_ty =
@@ -140,7 +140,7 @@ impl<'a> ToTokens for Setter<'a> {
                 into_value = wrap_expression_in_some(crate_root, into_value);
             }
 
-            let return_expr = if pattern == BuilderPattern::Uniffi {
+            let return_expr = if pattern == BuilderPattern::ImmutableArc {
                 quote!(#crate_root::export::core::sync::Arc::new(new))
             } else {
                 quote!(new)

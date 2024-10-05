@@ -17,8 +17,9 @@ pub enum BuilderPattern {
     ///   optimize chained `clone` calls away in release mode.
     ///   Therefore this turns out not to be as bad as it sounds.
     Immutable,
-    /// Works well for uniffi project.
-    Uniffi,
+    /// Acts as `Immutable`, but returns `Arc<Self>` instead:
+    /// E.g. `fn bar(&self, bar: Bar) -> Arc<Self>`.
+    ImmutableArc,
 }
 
 impl BuilderPattern {

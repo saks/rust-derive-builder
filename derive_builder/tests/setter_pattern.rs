@@ -26,7 +26,7 @@ struct Dolor {
 }
 
 #[derive(Debug, PartialEq, Default, Builder, Clone)]
-#[builder(pattern = "uniffi", custom_constructor)]
+#[builder(pattern = "immutable_arc", custom_constructor)]
 struct Magna {
     immutable: u32,
 }
@@ -37,7 +37,7 @@ struct Sit {
 }
 
 type ImmutableSetter<T, U> = fn(&T, U) -> T;
-type ImmutableUniffiSetter<T, U> = fn(&T, U) -> std::sync::Arc<T>;
+type ImmutableArcSetter<T, U> = fn(&T, U) -> std::sync::Arc<T>;
 type OwnedSetter<T, U> = fn(T, U) -> T;
 type MutableSetter<T, U> = fn(&mut T, U) -> &mut T;
 
@@ -114,15 +114,7 @@ fn owned_override() {
 #[test]
 fn immutable_uniffi() {
     // the setter must have the correct signature
-    let immutable_setter: ImmutableUniffiSetter<MagnaBuilder, u32> = MagnaBuilder::immutable;
-
-    impl MagnaBuilder {
-        fn create_empty() -> Self {
-            MagnaBuilder {
-                immutable: Default::default(),
-            }
-        }
-    }
+    let immutable_setter: ImmutableArcSetter<MagnaBuilder, u32> = MagnaBuilder::immutable;
 
     let old = MagnaBuilder::create_empty();
     let new = immutable_setter(&old, 42);

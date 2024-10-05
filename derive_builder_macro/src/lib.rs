@@ -20,7 +20,8 @@ use proc_macro::TokenStream;
         builder_field_attr,
         builder_impl_attr,
         builder_setter_attr,
-        builder_struct_attr
+        builder_struct_attr,
+        builder_create_empty_attr
     )
 )]
 pub fn derive(input: TokenStream) -> TokenStream {

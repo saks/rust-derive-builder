@@ -77,7 +77,7 @@ impl<'a> ToTokens for BuildMethod<'a> {
         let initializers = &self.initializers;
         let self_param = match self.pattern {
             BuilderPattern::Owned => quote!(self),
-            BuilderPattern::Mutable | BuilderPattern::Immutable | BuilderPattern::Uniffi => {
+            BuilderPattern::Mutable | BuilderPattern::Immutable | BuilderPattern::ImmutableArc => {
                 quote!(&self)
             }
         };
@@ -95,7 +95,7 @@ impl<'a> ToTokens for BuildMethod<'a> {
 
         if self.enabled {
             let crate_root = &self.crate_root;
-            let (return_ty, return_exp) = if self.pattern == BuilderPattern::Uniffi {
+            let (return_ty, return_exp) = if self.pattern == BuilderPattern::ImmutableArc {
                 (
                     quote!(#crate_root::export::core::sync::Arc<#target_ty>),
                     quote!(#crate_root::export::core::sync::Arc::new(#target_ty {

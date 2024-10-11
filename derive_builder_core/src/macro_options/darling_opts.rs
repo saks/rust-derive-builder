@@ -525,7 +525,13 @@ impl TryFrom<Vec<Attribute>> for StructForwardedAttrs {
 #[derive(Debug, Clone, FromDeriveInput)]
 #[darling(
     attributes(builder),
-    forward_attrs(cfg, allow, builder_struct_attr, builder_create_empty_attr),
+    forward_attrs(
+        cfg,
+        allow,
+        builder_struct_attr,
+        builder_create_empty_attr,
+        builder_impl_attr
+    ),
     supports(struct_named)
 )]
 pub struct Options {

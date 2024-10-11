@@ -210,19 +210,37 @@ impl<'a> ToTokens for Builder<'a> {
             #[cfg(not(feature = "clippy"))]
             tokens.append_all(quote!(#[allow(clippy::all)]));
 
+            let (create_empty_code, create_empty_ret_type) =
+                if self.pattern == BuilderPattern::ImmutableArc {
+                    (
+                        quote!(#crate_root::export::core::sync::Arc::new(
+                            Self {
+                                #(#builder_field_initializers)*
+                            }
+                        )),
+                        quote!(#crate_root::export::core::sync::Arc<Self>),
+                    )
+                } else {
+                    (
+                        quote!(
+                            Self {
+                                #(#builder_field_initializers)*
+                            }
+                        ),
+                        quote!(Self),
+                    )
+                };
+
             tokens.append_all(quote!(
                 #(#impl_attrs)*
                 #[allow(dead_code)]
                 impl #impl_generics #builder_ident #impl_ty_generics #impl_where_clause {
                     #(#functions)*
 
-                    /// A CHANGE!
                     /// Create an empty builder, with all fields set to `None` or `PhantomData`.
                     #(#create_empty_attrs)*
-                    fn #create_empty() -> Self {
-                        Self {
-                            #(#builder_field_initializers)*
-                        }
+                    fn #create_empty() -> #create_empty_ret_type {
+                        #create_empty_code
                     }
                 }
             ));

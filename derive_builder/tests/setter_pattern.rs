@@ -25,9 +25,10 @@ struct Dolor {
     owned: u32,
 }
 
-#[derive(Debug, PartialEq, Default, Builder, Clone)]
+#[derive(Debug, Builder, Clone)]
 #[builder(pattern = "immutable_arc", custom_constructor)]
 struct Magna {
+    #[allow(dead_code)]
     immutable: u32,
 }
 
